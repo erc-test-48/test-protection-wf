@@ -1,22 +1,36 @@
-name: PR Comment
+name: Conditional Workflow
 
-on:
-  pull_request:
-    types: [opened]
+on: [push, pull_request]
 
 jobs:
-  comment:
+  job1:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Create PR comment
+      - name: Say Hola
+        run: echo "Hola"
+        id: hola-step
+      - name: Check Hola Step
         run: |
-          COMMENT="This is the URL to the GitHub Action job: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          PAYLOAD=$(echo '{}' | jq --arg body "$COMMENT" '.body = $body')
-          echo "Posting comment to PR..."
-          curl -s -S -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-               -H "Content-Type: application/json" \
-               -d "$PAYLOAD" \
-               "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/issues/$GITHUB_EVENT_PULL_REQUEST_NUMBER/comments"
+          if [ "${{ steps.hola-step.outcome }}" != "success" ]; then
+            echo "fail"
+          else
+            echo "success"
+          fi
+        id: check-hola
+        continue-on-error: true
+
+  job2:
+    runs-on: ubuntu-latest
+    needs: job1
+    if: needs.job1.outputs['check-hola'] == 'fail'
+    steps:
+      - name: Say Adios
+        run: echo "Adios"
+
+  job3:
+    runs-on: ubuntu-latest
+    needs: job1
+    if: needs.job1.outputs['check-hola'] == 'success'
+    steps:
+      - name: Say Hola Hola
+        run: echo "Hola Hola"
