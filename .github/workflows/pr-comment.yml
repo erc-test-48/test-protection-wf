@@ -15,7 +15,7 @@ jobs:
             echo "fail"
           else
             echo "success"
-          fi
+          
         id: check-hola
         continue-on-error: true
 
