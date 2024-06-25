@@ -15,9 +15,6 @@ jobs:
             echo "fail"
           else
             echo "success"
-          
-        id: check-hola
-        continue-on-error: true
 
   job2:
     runs-on: ubuntu-latest
