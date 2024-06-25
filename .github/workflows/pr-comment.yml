@@ -1,0 +1,22 @@
+name: PR Comment
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Create PR comment
+        run: |
+          COMMENT="This is the URL to the GitHub Action job: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          PAYLOAD=$(echo '{}' | jq --arg body "$COMMENT" '.body = $body')
+          echo "Posting comment to PR..."
+          curl -s -S -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Content-Type: application/json" \
+               -d "$PAYLOAD" \
+               "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/issues/$GITHUB_EVENT_PULL_REQUEST_NUMBER/comments"
